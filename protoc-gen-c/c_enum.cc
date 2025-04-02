@@ -222,19 +222,23 @@ void EnumGenerator::GenerateEnumDescriptor(google::protobuf::io::Printer* printe
     }
   }
 
-  vars["unique_value_count"] = SimpleItoa(n_unique_values);
-  printer->Print(vars,
-      "static const ProtobufCEnumValue $lcclassname$__enum_values_by_number[$unique_value_count$] =\n"
-      "{\n");
-  if (descriptor_->value_count() > 0) {
-    GenerateValueInitializer(printer, value_index[0].index);
-    for (int j = 1; j < descriptor_->value_count(); j++) {
-      if (value_index[j-1].value != value_index[j].value) {
-        GenerateValueInitializer(printer, value_index[j].index);
+  //Cargomon
+  if (!optimize_code_size) {
+    vars["unique_value_count"] = SimpleItoa(n_unique_values);
+    printer->Print(vars,
+        "static const ProtobufCEnumValue $lcclassname$__enum_values_by_number[$unique_value_count$] =\n"
+        "{\n");
+    if (descriptor_->value_count() > 0) {
+      GenerateValueInitializer(printer, value_index[0].index);
+      for (int j = 1; j < descriptor_->value_count(); j++) {
+        if (value_index[j-1].value != value_index[j].value) {
+          GenerateValueInitializer(printer, value_index[j].index);
+        }
       }
     }
+    printer->Print(vars, "};\n");
   }
-  printer->Print(vars, "};\n");
+
   printer->Print(vars, "static const ProtobufCIntRange $lcclassname$__value_ranges[] = {\n");
   unsigned n_ranges = 0;
   if (descriptor_->value_count() > 0) {
@@ -294,7 +298,7 @@ void EnumGenerator::GenerateEnumDescriptor(google::protobuf::io::Printer* printe
         "{\n"
         "  PROTOBUF_C__ENUM_DESCRIPTOR_MAGIC,\n"
         "  NULL,NULL,NULL,NULL, /* CODE_SIZE */\n"
-        "  0, /* removed by Cargomon: $unique_value_count$, */\n"
+        "  0, /* removed by Cargomon */\n"
         "  NULL, /* removed by Cargomon: $lcclassname$__enum_values_by_number,*/\n"
         "  0, NULL, /* CODE_SIZE */\n"
         "  $n_ranges$,\n"
